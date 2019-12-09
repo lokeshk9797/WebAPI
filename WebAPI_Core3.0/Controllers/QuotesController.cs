@@ -21,9 +21,49 @@ namespace WebAPI_Core3._0.Controllers
 
         // GET: api/Quotes
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get(string sort)
         {
-            return Ok(_quoteDBContext.Quotes);
+            IQueryable<Quote> quotes;
+            switch(sort)
+            {
+                case "desc":
+                    quotes = _quoteDBContext.Quotes.OrderByDescending(q => q.CreatedAt);
+                    break;
+                case "asc":
+                    quotes = _quoteDBContext.Quotes.OrderBy(q => q.CreatedAt);
+                    break;
+                default:
+                    quotes = _quoteDBContext.Quotes;
+                    break;
+            }
+
+
+            return Ok(quotes);
+        }
+
+        [HttpGet("[action]")]
+        //[Route("[action]")]
+        public IActionResult PagingQuote(int pageSize=2,int pageNumber=1)
+        {
+            var quotes=_quoteDBContext.Quotes;
+            return Ok(quotes.Skip((pageNumber-1)*pageSize).Take(pageSize));
+        }
+
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult SearchQuote(string type)
+        {
+            if(type==null)
+            {
+                return Ok(_quoteDBContext.Quotes);
+            }
+            var quotes = _quoteDBContext.Quotes.Where(q => q.Type.Contains(type));
+            if(quotes==null)
+            {
+                return NotFound("No such type of Quote found");
+            }
+            return Ok(quotes);
         }
 
         // GET: api/Quotes/5
