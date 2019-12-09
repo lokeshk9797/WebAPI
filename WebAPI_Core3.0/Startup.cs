@@ -29,10 +29,11 @@ namespace WebAPI_Core3._0
         {
             services.AddControllers();
             services.AddDbContext<QuoteDBContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB; Initial Catalog = QuotesDb"));
+            services.AddMvc().AddXmlSerializerFormatters();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,QuoteDBContext quoteDBContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -51,7 +52,7 @@ namespace WebAPI_Core3._0
             {
                 endpoints.MapControllers();
             });
-            quoteDBContext.Database.EnsureCreated();
+            //quoteDBContext.Database.EnsureCreated();
 
         }
     }

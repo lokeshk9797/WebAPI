@@ -60,6 +60,8 @@ namespace WebAPI_Core3._0.Controllers
             quoteFromDB.Title = quote.Title;
             quoteFromDB.Author   = quote.Author;
             quoteFromDB.Description = quote.Description;
+            quoteFromDB.Type = quote.Type;
+            quoteFromDB.CreatedAt = quote.CreatedAt;
             _quoteDBContext.SaveChanges();
             return Ok("Record Updated Sucessfully");
         }
