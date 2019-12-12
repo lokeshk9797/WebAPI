@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI_Core3._0.Data;
 using WebAPI_Core3._0.Models;
+using System.Security.Claims;
 
 namespace WebAPI_Core3._0.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class QuotesController : ControllerBase
     {
         readonly QuoteDBContext _quoteDBContext ;
@@ -21,6 +24,8 @@ namespace WebAPI_Core3._0.Controllers
 
         // GET: api/Quotes
         [HttpGet]
+        [ResponseCache(Duration =10)]
+        [AllowAnonymous]
         public IActionResult Get(string sort)
         {
             IQueryable<Quote> quotes;
@@ -82,6 +87,8 @@ namespace WebAPI_Core3._0.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Quote  quote)
         {
+            var UserId= User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            quote.UserId = UserId;
             _quoteDBContext.Quotes.Add(quote);
             _quoteDBContext.SaveChanges();
             return StatusCode(StatusCodes.Status201Created);
@@ -92,10 +99,16 @@ namespace WebAPI_Core3._0.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Quote quote)
         {
+            var UserId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
             var quoteFromDB = _quoteDBContext.Quotes.Find(id);
             if(quoteFromDB==null)
             {
                 return NotFound("No value found against this ID..");
+            }
+            if(quoteFromDB.UserId!=UserId)
+            {
+                return BadRequest("You are not authorised to make changes");
             }
             quoteFromDB.Title = quote.Title;
             quoteFromDB.Author   = quote.Author;
@@ -110,10 +123,16 @@ namespace WebAPI_Core3._0.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
+            var UserId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
             var quoteFromDB = _quoteDBContext.Quotes.Find(id);
             if(quoteFromDB==null)
             {
                 return NotFound("No value found against this ID..");
+            }
+            if (quoteFromDB.UserId != UserId)
+            {
+                return BadRequest("You are not authorised to delete this quote");
             }
             _quoteDBContext.Quotes.Remove(quoteFromDB);
             _quoteDBContext.SaveChanges();

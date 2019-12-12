@@ -24,5 +24,7 @@ namespace WebAPI_Core3._0.Models
 
         [Required]
         public DateTime CreatedAt { get; set; }
+
+        public string UserId { get; set; }
     }
 }
